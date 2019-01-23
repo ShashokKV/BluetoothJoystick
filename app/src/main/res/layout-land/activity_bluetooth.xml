@@ -1,0 +1,108 @@
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:weightSum="100"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        tools:context=".BluetoothActivity">
+
+        <LinearLayout
+            android:id="@+id/statusLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/statusLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disconnected"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            style="?android:attr/buttonBarButtonStyle">
+
+            <Button
+                android:id="@+id/connectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="58"
+                android:onClick="connectButtonPressed"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/connect" />
+
+            <Button
+                android:id="@+id/disconnectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="52"
+                android:onClick="disconnectButtonPressed"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/disconnect"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="50"
+                android:orientation="horizontal">
+
+                <io.github.controlwear.virtual.joystick.android.JoystickView
+                    android:id="@+id/joystickView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    custom:JV_backgroundColor="#575153"
+                    custom:JV_borderWidth="0dp"
+                    custom:JV_buttonColor="#DC081E58" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="50"
+                android:orientation="vertical">
+
+                <ToggleButton
+                    android:id="@+id/brakeToggleButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/autobrake"
+                    android:textOff="@string/autobrake_off"
+                    android:textOn="@string/autobrake_on" />
+
+                <ToggleButton
+                    android:id="@+id/lightsToggleButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Light"
+                    android:textOff="@string/Lights_off"
+                    android:textOn="@string/Lights_on" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
