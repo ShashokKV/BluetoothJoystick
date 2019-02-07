@@ -20,13 +20,14 @@ public class JoystickRunner implements Runnable {
             Message message = new Message();
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+
                     writeHandler.sendMessage(this.message);
                 }catch (IllegalStateException exc) {
                     exc.printStackTrace();
                 }
                 message.copyFrom(this.message);
                 this.message = message;
-                Thread.sleep(100);
+                Thread.sleep(500);
             }
         } catch (InterruptedException ignored) {
         }

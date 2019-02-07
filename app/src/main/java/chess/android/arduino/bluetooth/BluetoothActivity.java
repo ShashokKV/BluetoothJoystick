@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -27,7 +26,7 @@ public class BluetoothActivity extends Activity {
     private static final String TAG = "BluetoothActivity";
     // MAC address of remote Bluetooth device
     // Replace this with the address of your own module
-    private static final String address = "00:06:66:66:33:89";
+    //private static final String address = "00:06:66:66:33:89";
 
     private static final int Y_MAX = 255;
     private static final int X_MAX = 90;
@@ -55,7 +54,9 @@ public class BluetoothActivity extends Activity {
 
         // Initialize the Bluetooth thread, passing in a MAC address
         // and a Handler that will receive incoming messages
-        if (btt==null) btt = new BluetoothThread(address, new ReadHandler(this));
+
+
+        if (btt==null) btt = new BluetoothThread(new ReadHandler(this));
 
         // Get the handler that is used to send messages
         writeHandler = btt.getWriteHandler();
@@ -90,74 +91,65 @@ public class BluetoothActivity extends Activity {
             brakesOn = savedInstanceState.getBoolean(BRAKES_STATE);
         }
 
-        if (joystickThread!=null) joystickThread.interrupt();
+        findViewById(R.id.connectButton).setEnabled(!connected);
+        findViewById(R.id.disconnectButton).setEnabled(connected);
 
         if (btt!=null) {
             writeHandler = btt.getWriteHandler();
             btt.setReadHandler(new ReadHandler(this));
-
         }
 
         lightsToggle.setEnabled(connected);
         lightsToggle.setChecked(lightsOn);
-        lightsToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (joystickThread!=null) joystickThread.interrupt();
-                Message msg = Message.obtain();
-                TextView tv = findViewById(R.id.statusText);
-                String lightsStatus;
-                if (isChecked) {
-                    lightsStatus = "L1";
-                } else {
-                    lightsStatus = "L0";
-                }
-                lightsOn = isChecked;
-                msg.obj = lightsStatus;
-                tv.setText(lightsStatus);
-                writeHandler.sendMessage(msg);
+        lightsToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Message msg = Message.obtain();
+            TextView tv = findViewById(R.id.statusText);
+            String lightsStatus;
+            if (isChecked) {
+                lightsStatus = "L1";
+            } else {
+                lightsStatus = "L0";
             }
+            lightsOn = isChecked;
+            msg.obj = lightsStatus;
+            tv.setText(lightsStatus);
+            writeHandler.sendMessage(msg);
         });
 
         ToggleButton brakesToggle = findViewById(R.id.brakeToggleButton);
         brakesToggle.setEnabled(connected);
         brakesToggle.setChecked(brakesOn);
-        brakesToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (joystickThread!=null) joystickThread.interrupt();
-                Message msg = Message.obtain();
-                TextView tv = findViewById(R.id.statusText);
-                String lightsStatus;
-                if (isChecked) {
-                    lightsStatus = "B1";
-                } else {
-                    lightsStatus = "B0";
-                }
-                brakesOn = isChecked;
-                msg.obj = lightsStatus;
-                tv.setText(lightsStatus);
-                writeHandler.sendMessage(msg);
+        brakesToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Message msg = Message.obtain();
+            TextView tv = findViewById(R.id.statusText);
+            String lightsStatus;
+            if (isChecked) {
+                lightsStatus = "B1";
+            } else {
+                lightsStatus = "B0";
             }
+            brakesOn = isChecked;
+            msg.obj = lightsStatus;
+            tv.setText(lightsStatus);
+            writeHandler.sendMessage(msg);
         });
 
         JoystickView joystick = findViewById(R.id.joystickView);
         joystick.setEnabled(connected);
-        joystick.setOnMoveListener(new JoystickView.OnMoveListener() {
-            @Override
-            public void onMove(int angle, int strength) {
-                Message msg = Message.obtain();
-                String coordinates = parseJoystickInput(angle, strength);
-                msg.obj = coordinates;
-                if (joystickThread!=null) joystickThread.interrupt();
-                if (angle != DEFAULT_ANGLE && strength != DEFAULT_STRENGTH) {
+        joystick.setOnMoveListener((angle, strength) -> {
+            Message msg = Message.obtain();
+            String coordinates = parseJoystickInput(angle, strength);
+            msg.obj = coordinates;
+            if (joystickThread!=null) joystickThread.interrupt();
+            if (angle != DEFAULT_ANGLE && strength != DEFAULT_STRENGTH) {
                     joystickThread = new Thread(new JoystickRunner(writeHandler, msg));
                     joystickThread.start();
-                }else{
-                    writeHandler.sendMessage(msg);
-                }
-
-                TextView tv = findViewById(R.id.statusText);
-                tv.setText(coordinates);
+            }else{
+                writeHandler.sendMessage(msg);
             }
+
+            TextView tv = findViewById(R.id.statusText);
+            tv.setText(coordinates);
         });
     }
 
@@ -187,9 +179,7 @@ public class BluetoothActivity extends Activity {
         @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(Message message) {
-
             String s = (String) message.obj;
-
             BluetoothActivity bluetoothActivity = bActivity.get();
 
             // Do something with the message
@@ -200,6 +190,8 @@ public class BluetoothActivity extends Activity {
                     bluetoothActivity.findViewById(R.id.joystickView).setEnabled(true);
                     bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(true);
                     bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(true);
+                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(false);
+                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(true);
                     bluetoothActivity.connected = true;
                     break;
                 }
@@ -209,15 +201,26 @@ public class BluetoothActivity extends Activity {
                     bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
                     bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
                     bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
+                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
+                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
                     bluetoothActivity.connected = false;
                     if (joystickThread!=null) joystickThread.interrupt();
+                    joystickThread=null;
                     break;
                 }
                 case "CONNECTION FAILED": {
                     Toast.makeText(bluetoothActivity.getApplicationContext(),
                             "Connection failed!.", Toast.LENGTH_SHORT).show();
+                    bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
+                    bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
+                    bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
+                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
+                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
+                    if (btt!=null) btt.interrupt();
                     btt = null;
                     bluetoothActivity.connected = false;
+                    if (joystickThread!=null) joystickThread.interrupt();
+                    joystickThread=null;
                     break;
                 }
                 default: {
