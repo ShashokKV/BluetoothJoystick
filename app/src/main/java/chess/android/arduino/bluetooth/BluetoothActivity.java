@@ -21,7 +21,6 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
  */
 public class BluetoothActivity extends Activity {
 
-    public static final int DEFAULT_STRENGTH = 0;
     // Tag for logging
     private static final String TAG = "BluetoothActivity";
     // MAC address of remote Bluetooth device
@@ -33,14 +32,12 @@ public class BluetoothActivity extends Activity {
     private static final String CONNECTED_STATE = "connectedState";
     private static final String LIGHTS_STATE = "lightsState";
     private static final String BRAKES_STATE = "brakesState";
-    public static final int DEFAULT_ANGLE = 90;
     private boolean connected = false;
     private boolean lightsOn = false;
     private boolean brakesOn = false;
 
     // The thread that does all the work
     static BluetoothThread btt;
-    static Thread joystickThread;
 
     // Handler for writing messages to the Bluetooth connection
     Handler writeHandler;
@@ -54,8 +51,6 @@ public class BluetoothActivity extends Activity {
 
         // Initialize the Bluetooth thread, passing in a MAC address
         // and a Handler that will receive incoming messages
-
-
         if (btt==null) btt = new BluetoothThread(new ReadHandler(this));
 
         // Get the handler that is used to send messages
@@ -103,7 +98,6 @@ public class BluetoothActivity extends Activity {
         lightsToggle.setChecked(lightsOn);
         lightsToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Message msg = Message.obtain();
-            TextView tv = findViewById(R.id.statusText);
             String lightsStatus;
             if (isChecked) {
                 lightsStatus = "L1";
@@ -112,7 +106,6 @@ public class BluetoothActivity extends Activity {
             }
             lightsOn = isChecked;
             msg.obj = lightsStatus;
-            tv.setText(lightsStatus);
             writeHandler.sendMessage(msg);
         });
 
@@ -121,16 +114,14 @@ public class BluetoothActivity extends Activity {
         brakesToggle.setChecked(brakesOn);
         brakesToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Message msg = Message.obtain();
-            TextView tv = findViewById(R.id.statusText);
-            String lightsStatus;
+            String brakesStatus;
             if (isChecked) {
-                lightsStatus = "B1";
+                brakesStatus = "B1";
             } else {
-                lightsStatus = "B0";
+                brakesStatus = "B0";
             }
             brakesOn = isChecked;
-            msg.obj = lightsStatus;
-            tv.setText(lightsStatus);
+            msg.obj = brakesStatus;
             writeHandler.sendMessage(msg);
         });
 
@@ -138,18 +129,8 @@ public class BluetoothActivity extends Activity {
         joystick.setEnabled(connected);
         joystick.setOnMoveListener((angle, strength) -> {
             Message msg = Message.obtain();
-            String coordinates = parseJoystickInput(angle, strength);
-            msg.obj = coordinates;
-            if (joystickThread!=null) joystickThread.interrupt();
-            if (angle != DEFAULT_ANGLE && strength != DEFAULT_STRENGTH) {
-                    joystickThread = new Thread(new JoystickRunner(writeHandler, msg));
-                    joystickThread.start();
-            }else{
-                writeHandler.sendMessage(msg);
-            }
-
-            TextView tv = findViewById(R.id.statusText);
-            tv.setText(coordinates);
+            msg.obj = parseJoystickInput(angle, strength);
+            writeHandler.sendMessage(msg);
         });
     }
 
@@ -204,8 +185,6 @@ public class BluetoothActivity extends Activity {
                     bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
                     bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
                     bluetoothActivity.connected = false;
-                    if (joystickThread!=null) joystickThread.interrupt();
-                    joystickThread=null;
                     break;
                 }
                 case "CONNECTION FAILED": {
@@ -219,8 +198,6 @@ public class BluetoothActivity extends Activity {
                     if (btt!=null) btt.interrupt();
                     btt = null;
                     bluetoothActivity.connected = false;
-                    if (joystickThread!=null) joystickThread.interrupt();
-                    joystickThread=null;
                     break;
                 }
                 default: {
