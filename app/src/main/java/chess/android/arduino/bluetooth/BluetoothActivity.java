@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -137,6 +136,7 @@ public class BluetoothActivity extends Activity {
     private String parseJoystickInput(int angle, int strength) {
         int x, y;
         x = Double.valueOf((strength*X_MAX*Math.cos(Math.toRadians(angle)))/100).intValue()+X_MAX;
+        x = Math.max(75, Math.min(105, x));
         y = Double.valueOf((strength*Y_MAX*Math.sin(Math.toRadians(angle)))/100).intValue();
 
         return "X"+x+"#"+"Y"+y;
@@ -164,45 +164,41 @@ public class BluetoothActivity extends Activity {
             BluetoothActivity bluetoothActivity = bActivity.get();
 
             // Do something with the message
-            switch (s) {
-                case "CONNECTED": {
-                    Toast.makeText(bluetoothActivity.getApplicationContext(),
-                            "Connected.", Toast.LENGTH_SHORT).show();
-                    bluetoothActivity.findViewById(R.id.joystickView).setEnabled(true);
-                    bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(true);
-                    bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(true);
-                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(true);
-                    bluetoothActivity.connected = true;
-                    break;
-                }
-                case "DISCONNECTED": {
-                    Toast.makeText(bluetoothActivity.getApplicationContext(),
-                            "Disconnected.", Toast.LENGTH_SHORT).show();
-                    bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
-                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
-                    bluetoothActivity.connected = false;
-                    break;
-                }
-                case "CONNECTION FAILED": {
-                    Toast.makeText(bluetoothActivity.getApplicationContext(),
-                            "Connection failed!.", Toast.LENGTH_SHORT).show();
-                    bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
-                    bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
-                    bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
-                    if (btt!=null) btt.interrupt();
-                    btt = null;
-                    bluetoothActivity.connected = false;
-                    break;
-                }
-                default: {
-                    break;
-                }
+            if (s.equals("CONNECTED")) {
+                Toast.makeText(bluetoothActivity.getApplicationContext(),
+                        "Connected.", Toast.LENGTH_SHORT).show();
+                bluetoothActivity.findViewById(R.id.joystickView).setEnabled(true);
+                bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(true);
+                bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(true);
+                bluetoothActivity.findViewById(R.id.connectButton).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(true);
+                bluetoothActivity.connected = true;
+
+            } else if(s.equals("DISCONNECTED")) {
+                Toast.makeText(bluetoothActivity.getApplicationContext(),
+                        "Disconnected.", Toast.LENGTH_SHORT).show();
+                bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
+                bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
+                bluetoothActivity.connected = false;
+                if (btt!=null) btt.interrupt();
+                btt = null;
+            } else if(s.startsWith("ERROR:")) {
+                Toast.makeText(bluetoothActivity.getApplicationContext(),
+                        s, Toast.LENGTH_SHORT).show();
+                bluetoothActivity.findViewById(R.id.joystickView).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.brakeToggleButton).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.lightsToggleButton).setEnabled(false);
+                bluetoothActivity.findViewById(R.id.connectButton).setEnabled(true);
+                bluetoothActivity.findViewById(R.id.disconnectButton).setEnabled(false);
+                if (btt!=null) btt.interrupt();
+                btt = null;
+                bluetoothActivity.connected = false;
+            }   else {
+                Toast.makeText(bluetoothActivity.getApplicationContext(),
+                        s, Toast.LENGTH_SHORT).show();
             }
         }
     }
